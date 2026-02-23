@@ -2,15 +2,15 @@
 agp = "8.13.0"
 sun-cleaner = "v1.0.0"
 r8-annotations = "v1.0.0"
-panama = "v0.1.1"
+panama = "7b1613329b"
 
 [libraries]
 sun-cleaner = { module = "io.github.vova7878:SunCleanerStub", version.ref = "sun-cleaner" }
 r8-annotations = { module = "io.github.vova7878:R8Annotations", version.ref = "r8-annotations" }
 
-panama-core = { module = "io.github.vova7878.panama:Core", version.ref = "panama" }
-panama-unsafe = { module = "io.github.vova7878.panama:Unsafe", version.ref = "panama" }
-panama-llvm = { module = "io.github.vova7878.panama:LLVM", version.ref = "panama" }
+panama-core = { module = "com.github.aerath-stuff.PanamaPort:Core", version.ref = "panama" }
+panama-unsafe = { module = "com.github.aerath-stuff.PanamaPort:Unsafe", version.ref = "panama" }
+panama-llvm = { module = "com.github.aerath-stuff.PanamaPort:LLVM", version.ref = "panama" }
 
 [plugins]
 android-library = { id = "com.android.library", version.ref = "agp" }

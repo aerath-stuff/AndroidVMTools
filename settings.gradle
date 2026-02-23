@@ -2,6 +2,8 @@ pluginManagement {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
+        maven { url = "https://jitpack.io" }
     }
 }
 dependencyResolutionManagement {
@@ -9,6 +11,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
+        maven { url = "https://jitpack.io" }
     }
 }
 rootProject.name = "AndroidVMTools"
