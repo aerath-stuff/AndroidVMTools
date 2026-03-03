@@ -31,6 +31,8 @@ public class EntryPoints {
             Object.class, int.class, long.class, float.class, double.class,
             Object.class, int.class, long.class, float.class, double.class);
 
+    private static final MethodType JAVA_TYPE = MethodType.methodType(Void.class);
+
     static {
         TypeId obj_id = TypeId.OBJECT;
 
@@ -38,7 +40,7 @@ public class EntryPoints {
         TypeId test_id = TypeId.ofName(test_name);
 
         var jni_method_id = MethodId.of(test_id, "jni", ProtoId.of(JNI_TYPE));
-        var interpreter_method_id = MethodId.of(test_id, "interpreter", ProtoId.of(TypeId.V));
+        var interpreter_method_id = MethodId.of(test_id, "interpreter", ProtoId.of(JAVA_TYPE));
 
         ClassDef test_def = ClassBuilder.build(test_id, cb -> cb
                 .withSuperClass(obj_id)
