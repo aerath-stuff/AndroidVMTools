@@ -15,6 +15,8 @@ import static com.v7878.unsafe.Reflection.getDeclaredMethod;
 import static com.v7878.unsafe.Reflection.unreflect;
 import static com.v7878.vmtools._Utils.rawMethodTypeOf;
 
+import android.util.Pair;
+
 import com.v7878.dex.DexIO;
 import com.v7878.dex.builder.ClassBuilder;
 import com.v7878.dex.immutable.ClassDef;
@@ -146,7 +148,9 @@ public class Hooks {
     /**
      * The declaring classes of target and hooker MUST be visible initialised
      */
-    private static void hook(Executable target, Executable hooker, long hooker_entry_point) {
+    private static long hook(Executable target, Executable hooker, long hooker_entry_point) {
+        var hookerNativeAddress = 0L;
+
         //TODO: check signatures
         Objects.requireNonNull(target);
         Objects.requireNonNull(hooker);
@@ -157,8 +161,11 @@ public class Hooks {
         try (var ignored = new ScopedSuspendAll(false)) {
             ArtMethodUtils.makeExecutableNonCompilable(target);
             ArtMethodUtils.changeExecutableFlags(target, kAccFastInterpreterToInterpreterInvoke, 0);
-            ArtMethodUtils.setExecutableEntryPoint(target, new_entry_point.nativeAddress());
+            hookerNativeAddress = new_entry_point.nativeAddress();
+            ArtMethodUtils.setExecutableEntryPoint(target, hookerNativeAddress);
         }
+
+        return hookerNativeAddress;
     }
 
     public enum EntryPointType {
@@ -190,13 +197,15 @@ public class Hooks {
      * first -> second
      * second -> first
      */
-    public static void hookSwap(Executable first, EntryPointType first_type,
+    public static Pair<Long, Long> hookSwap(Executable first, EntryPointType first_type,
                                 Executable second, EntryPointType second_type) {
         ensureDeclaringClassInitialized(first);
         ensureDeclaringClassInitialized(second);
         long old_first_entry_point = getEntryPoint(first, first_type);
-        hook(first, second, getEntryPoint(second, second_type));
-        hook(second, first, old_first_entry_point);
+        var firstHook = hook(first, second, getEntryPoint(second, second_type));
+        var secondHook = hook(second, first, old_first_entry_point);
+
+        return new Pair<>(firstHook, secondHook);
     }
 
     /**
@@ -282,13 +291,13 @@ public class Hooks {
      * target -> hooker
      * original (parameter of transformer) -> target
      */
-    public static void hook(Executable target, EntryPointType target_type,
+    public static Pair<Long, Long> hook(Executable target, EntryPointType target_type,
                             HookTransformer hooker, EntryPointType hooker_type) {
         Objects.requireNonNull(target);
         Objects.requireNonNull(hooker);
 
         var invoker = initInvoker(rawMethodTypeOf(target), hooker);
         SunCleaner.systemCleaner().register(target.getDeclaringClass(), () -> Utils.reachabilityFence(invoker));
-        hookSwap(target, target_type, invoker, hooker_type);
+        return hookSwap(target, target_type, invoker, hooker_type);
     }
 }
