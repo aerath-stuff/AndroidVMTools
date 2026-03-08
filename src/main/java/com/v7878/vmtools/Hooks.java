@@ -148,7 +148,7 @@ public class Hooks {
     /**
      * The declaring classes of target and hooker MUST be visible initialised
      */
-    private static long hook(Executable target, Executable hooker, long hooker_entry_point) {
+    private static long hook(Executable target, Executable hooker, long hooker_entry_point, boolean return_after) {
         var hookerNativeAddress = 0L;
 
         //TODO: check signatures
@@ -161,8 +161,15 @@ public class Hooks {
         try (var ignored = new ScopedSuspendAll(false)) {
             ArtMethodUtils.makeExecutableNonCompilable(target);
             ArtMethodUtils.changeExecutableFlags(target, kAccFastInterpreterToInterpreterInvoke, 0);
-            hookerNativeAddress = new_entry_point.nativeAddress();
-            ArtMethodUtils.setExecutableEntryPoint(target, hookerNativeAddress);
+            var hooker_address = new_entry_point.nativeAddress();
+
+            if (return_after) {
+                hookerNativeAddress = hooker_address;
+            } else {
+                hookerNativeAddress = ArtMethodUtils.getExecutableEntryPoint(target);
+            }
+
+            ArtMethodUtils.setExecutableEntryPoint(target, hooker_address);
         }
 
         return hookerNativeAddress;
@@ -190,7 +197,7 @@ public class Hooks {
     public static void hook(Executable target, Executable hooker, EntryPointType hooker_type) {
         ensureDeclaringClassInitialized(target);
         ensureDeclaringClassInitialized(hooker);
-        hook(target, hooker, getEntryPoint(hooker, hooker_type));
+        hook(target, hooker, getEntryPoint(hooker, hooker_type), true);
     }
 
     /**
@@ -202,8 +209,8 @@ public class Hooks {
         ensureDeclaringClassInitialized(first);
         ensureDeclaringClassInitialized(second);
         long old_first_entry_point = getEntryPoint(first, first_type);
-        var firstHook = hook(first, second, getEntryPoint(second, second_type));
-        var secondHook = hook(second, first, old_first_entry_point);
+        var firstHook = hook(first, second, getEntryPoint(second, second_type), true);
+        var secondHook = hook(second, first, old_first_entry_point, false);
 
         return new Pair<>(firstHook, secondHook);
     }
@@ -213,14 +220,16 @@ public class Hooks {
      * backup -> target
      * hooker is unchanged
      */
-    public static void hookBackup(Executable target, EntryPointType target_type,
+    public static Pair<Long, Long> hookBackup(Executable target, EntryPointType target_type,
                                   Executable hooker, EntryPointType hooker_type,
                                   Executable backup) {
         ensureDeclaringClassInitialized(target);
         ensureDeclaringClassInitialized(hooker);
         ensureDeclaringClassInitialized(backup);
-        hook(backup, target, getEntryPoint(target, target_type));
-        hook(target, hooker, getEntryPoint(hooker, hooker_type));
+        var firstHook = hook(backup, target, getEntryPoint(target, target_type), true);
+        var secondHook = hook(target, hooker, getEntryPoint(hooker, hooker_type), false);
+
+        return new Pair<>(firstHook, secondHook);
     }
 
     private static final String INVOKER_NAME = Hooks.class.getName() + "$$$Invoker";
@@ -269,15 +278,15 @@ public class Hooks {
     private static final WeakReferenceCache<MethodType, byte[]>
             invokers_cache = new WeakReferenceCache<>();
 
-    private static Class<?> loadInvoker(MethodType type) {
-        ClassLoader loader = Utils.newEmptyClassLoader(Object.class.getClassLoader());
+    private static Class<?> loadInvoker(MethodType type, ClassLoader parentClassLoader) {
+        ClassLoader loader = Utils.newEmptyClassLoader(parentClassLoader);
         var dexfile = DexFileUtils.openDexFile(invokers_cache.get(type, Hooks::generateInvoker));
         return DexFileUtils.loadClass(dexfile, INVOKER_NAME, loader);
     }
 
     private static Method initInvoker(MethodType type, HookTransformer transformer) {
         var erased = type.erase(); // TODO: maybe use basic type?
-        var invoker_class = loadInvoker(erased);
+        var invoker_class = loadInvoker(erased, Object.class.getClassLoader());
         var hooker_method = getDeclaredMethod(invoker_class, METHOD_NAME, InvokeAccess.ptypes(erased));
         var backup_handle = MethodHandlesImpl.reinterptetHandle(unreflect(hooker_method), type);
         var impl = new HookTransformerImpl(backup_handle, transformer);
