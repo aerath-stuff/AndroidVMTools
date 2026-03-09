@@ -210,7 +210,7 @@ public class Hooks {
         ensureDeclaringClassInitialized(second);
         long old_first_entry_point = getEntryPoint(first, first_type);
         var firstHook = hook(first, second, getEntryPoint(second, second_type), true);
-        var secondHook = hook(second, first, old_first_entry_point, false);
+        var secondHook = hook(second, first, old_first_entry_point, true);
 
         return new Pair<>(firstHook, secondHook);
     }
@@ -227,7 +227,7 @@ public class Hooks {
         ensureDeclaringClassInitialized(hooker);
         ensureDeclaringClassInitialized(backup);
         var firstHook = hook(backup, target, getEntryPoint(target, target_type), true);
-        var secondHook = hook(target, hooker, getEntryPoint(hooker, hooker_type), false);
+        var secondHook = hook(target, hooker, getEntryPoint(hooker, hooker_type), true);
 
         return new Pair<>(firstHook, secondHook);
     }
