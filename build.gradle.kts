@@ -35,7 +35,6 @@ dependencies {
 
 mavenPublishing {
     publishToMavenCentral(automaticRelease = false)
-    signAllPublications()
     configure(
         AndroidMultiVariantLibrary(
             javadocJar = JavadocJar.Empty(),
@@ -52,7 +51,7 @@ mavenPublishing {
     pom {
         name.set("AndroidVMTools")
         // TODO: description.set("")
-        inceptionYear.set("2025")
+        inceptionYear.set("2026")
         url.set("https://github.com/vova7878/AndroidVMTools")
 
         licenses {
