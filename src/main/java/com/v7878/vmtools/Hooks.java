@@ -29,7 +29,6 @@ import com.v7878.sun.cleaner.SunCleaner;
 import com.v7878.unsafe.AndroidUnsafe;
 import com.v7878.unsafe.ArtMethodUtils;
 import com.v7878.unsafe.ClassUtils;
-import com.v7878.unsafe.DexFileUtils;
 import com.v7878.unsafe.NativeCodeBlob;
 import com.v7878.unsafe.Utils;
 import com.v7878.unsafe.Utils.WeakReferenceCache;
@@ -144,7 +143,7 @@ public class Hooks {
     }
 
     /**
-     * The declaring classes of target and hooker MUST be visible initialised
+     * The declaring classes of target and hooker MUST be visible initialized
      */
     private static void hook(Executable target, Executable hooker, long hooker_entry_point) {
         //TODO: check signatures
@@ -261,13 +260,13 @@ public class Hooks {
             invokers_cache = new WeakReferenceCache<>();
 
     private static Class<?> loadInvoker(MethodType type) {
-        ClassLoader loader = Utils.newEmptyClassLoader(Object.class.getClassLoader());
-        var dexfile = DexFileUtils.openDexFile(invokers_cache.get(type, Hooks::generateInvoker));
-        return DexFileUtils.loadClass(dexfile, INVOKER_NAME, loader);
+        ClassLoader loader = ClassUtils.newLoader(Object.class.getClassLoader(),
+                invokers_cache.get(type, Hooks::generateInvoker));
+        return ClassUtils.forName(INVOKER_NAME, loader);
     }
 
     private static Method initInvoker(MethodType type, HookTransformer transformer) {
-        var erased = type.erase(); // TODO: maybe use basic type?
+        var erased = type.erase();
         var invoker_class = loadInvoker(erased);
         var hooker_method = getDeclaredMethod(invoker_class, METHOD_NAME, InvokeAccess.ptypes(erased));
         var backup_handle = MethodHandlesImpl.reinterptetHandle(unreflect(hooker_method), type);

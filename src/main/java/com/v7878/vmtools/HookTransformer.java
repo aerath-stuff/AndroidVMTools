@@ -6,7 +6,7 @@ import com.v7878.unsafe.invoke.Transformers.AbstractTransformer;
 import java.lang.invoke.MethodHandle;
 
 public interface HookTransformer {
-    void transform(MethodHandle original, EmulatedStackFrame stack) throws Throwable;
+    void transform(MethodHandle original, EmulatedStackFrame frame) throws Throwable;
 }
 
 final class HookTransformerImpl extends AbstractTransformer {
@@ -19,8 +19,8 @@ final class HookTransformerImpl extends AbstractTransformer {
     }
 
     @Override
-    protected void transform(MethodHandle thiz, EmulatedStackFrame stack) throws Throwable {
-        stack.type(original.type());
-        transformer.transform(original, stack);
+    protected void transform(MethodHandle thiz, EmulatedStackFrame frame) throws Throwable {
+        frame.type(original.type());
+        transformer.transform(original, frame);
     }
 }

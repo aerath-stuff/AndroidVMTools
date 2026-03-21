@@ -21,7 +21,6 @@ import static com.v7878.unsafe.Utils.nothrows_run;
 import static com.v7878.unsafe.Utils.searchMethod;
 import static com.v7878.unsafe.VM.objectSizeField;
 import static com.v7878.unsafe.VM.setObjectClass;
-import static com.v7878.vmtools._Utils.generateClassName;
 
 import com.v7878.dex.DexIO;
 import com.v7878.dex.builder.ClassBuilder;
@@ -32,6 +31,7 @@ import com.v7878.dex.immutable.MethodId;
 import com.v7878.dex.immutable.ProtoId;
 import com.v7878.dex.immutable.TypeId;
 import com.v7878.unsafe.AndroidUnsafe;
+import com.v7878.unsafe.Utils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -101,8 +101,7 @@ public class ClassLoaderHooks {
             TypeId bf = TypeId.of(BiFunction.class);
             ProtoId apply_proto = ProtoId.of(TypeId.OBJECT, TypeId.OBJECT, TypeId.OBJECT);
 
-            String hook_name = generateClassName(target_loader,
-                    target_class.getName() + "$$$SyntheticHook");
+            String hook_name = Utils.generateClassName(target_loader, target_class.getName() + "$$$SyntheticHook");
             TypeId hook_id = TypeId.ofName(hook_name);
 
             var impl_f_id = FieldId.of(hook_id, "impl", bf);

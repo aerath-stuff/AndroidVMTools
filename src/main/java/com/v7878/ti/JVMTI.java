@@ -88,7 +88,7 @@ import static com.v7878.unsafe.foreign.BulkLinker.MapType.OBJECT;
 import static com.v7878.unsafe.foreign.ExtraLayouts.WORD;
 import static com.v7878.unsafe.llvm.LLVMBuilder.const_int128;
 import static com.v7878.unsafe.llvm.LLVMBuilder.const_int32;
-import static com.v7878.unsafe.llvm.LLVMTypes.function_t;
+import static com.v7878.unsafe.llvm.LLVMTypes.fn_t;
 import static com.v7878.unsafe.llvm.LLVMTypes.int128_t;
 import static com.v7878.unsafe.llvm.LLVMTypes.int32_t;
 import static com.v7878.unsafe.llvm.LLVMTypes.intptr_t;
@@ -572,10 +572,9 @@ public final class JVMTI {
                     JVMTI_SCOPE.allocate(JVMTI_INTERFACE_LAYOUT);
 
             static {
-                final String name = "function";
                 MemorySegment getter = generateFunctionCodeSegment((context, module, builder) -> {
-                    LLVMTypeRef f_type = function_t(int32_t(context), intptr_t(context), ptr_t(int128_t(context)));
-                    LLVMValueRef function = LLVMAddFunction(module, name, f_type);
+                    LLVMTypeRef f_type = fn_t(int32_t(context), intptr_t(context), ptr_t(int128_t(context)));
+                    LLVMValueRef function = LLVMAddFunction(module, "function", f_type);
                     LLVMValueRef[] args = LLVMGetParams(function);
 
                     LLVMPositionBuilderAtEnd(builder, LLVMAppendBasicBlock(function, ""));
@@ -585,7 +584,9 @@ public final class JVMTI {
                     LLVMSetAlignment(store, 1);
 
                     LLVMBuildRet(builder, const_int32(context, JVMTI_ERROR_NONE));
-                }, name, JVMTI_SCOPE);
+
+                    return function;
+                }, JVMTI_SCOPE);
                 INTERFACE_COPY.copyFrom(getJVMTIInterface());
                 INTERFACE_COPY.set(ADDRESS, GPC_OFFSET, getter);
             }
