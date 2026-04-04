@@ -41,6 +41,7 @@ import static com.v7878.unsafe.AndroidUnsafe.getShortN;
 import static com.v7878.unsafe.AndroidUnsafe.getWordN;
 import static com.v7878.unsafe.AndroidUnsafe.putIntN;
 import static com.v7878.unsafe.ArtVersion.A14;
+import static com.v7878.unsafe.ArtVersion.A16;
 import static com.v7878.unsafe.ArtVersion.A9;
 import static com.v7878.unsafe.ArtVersion.ART_INDEX;
 import static com.v7878.unsafe.DexFileUtils.DEXFILE_LAYOUT;
@@ -58,6 +59,7 @@ import com.v7878.foreign.MemorySegment;
 import com.v7878.unsafe.DexFileUtils;
 import com.v7878.unsafe.ExtraMemoryAccess;
 import com.v7878.unsafe.VM;
+import com.v7878.unsafe.io.Maps;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -126,7 +128,7 @@ public final class DexFileDump {
     }
 
     public static boolean isCompactDex(long dexfile_struct) {
-        if (ART_INDEX < A9) {
+        if (ART_INDEX < A9 || ART_INDEX > A16) {
             return false;
         } else {
             class Holder {
@@ -261,7 +263,7 @@ public final class DexFileDump {
 
         var end = address + size;
 
-        try (var stream = MMap.maps("self")) {
+        try (var stream = Maps.maps("self")) {
             stream.forEach(entry -> {
                 if (!entry.perms().contains("r")) {
                     return;

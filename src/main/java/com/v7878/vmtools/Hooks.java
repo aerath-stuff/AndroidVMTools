@@ -31,7 +31,6 @@ import com.v7878.sun.cleaner.SunCleaner;
 import com.v7878.unsafe.AndroidUnsafe;
 import com.v7878.unsafe.ArtMethodUtils;
 import com.v7878.unsafe.ClassUtils;
-import com.v7878.unsafe.DexFileUtils;
 import com.v7878.unsafe.NativeCodeBlob;
 import com.v7878.unsafe.Utils;
 import com.v7878.unsafe.Utils.WeakReferenceCache;
@@ -146,7 +145,7 @@ public class Hooks {
     }
 
     /**
-     * The declaring classes of target and hooker MUST be visible initialised
+     * The declaring classes of target and hooker MUST be visible initialized
      */
     private static long hook(Executable target, Executable hooker, long hooker_entry_point, boolean return_after) {
         var hookerNativeAddress = 0L;
@@ -279,9 +278,9 @@ public class Hooks {
             invokers_cache = new WeakReferenceCache<>();
 
     private static Class<?> loadInvoker(MethodType type, ClassLoader parentClassLoader) {
-        ClassLoader loader = Utils.newEmptyClassLoader(parentClassLoader);
-        var dexfile = DexFileUtils.openDexFile(invokers_cache.get(type, Hooks::generateInvoker));
-        return DexFileUtils.loadClass(dexfile, INVOKER_NAME, loader);
+        ClassLoader loader = ClassUtils.newLoader(parentClassLoader,
+                invokers_cache.get(type, Hooks::generateInvoker));
+        return ClassUtils.forName(INVOKER_NAME, loader);
     }
 
     private static Method initInvoker(MethodType type, HookTransformer transformer) {

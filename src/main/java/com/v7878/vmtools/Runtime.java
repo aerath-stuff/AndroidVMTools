@@ -29,7 +29,7 @@ public class Runtime {
         // This supports method tracing and a restricted set of debug features (for ex: redefinition
         // isn't supported). We transition to this state when method tracing has started or when the
         // debugger was attached and transition back to NonDebuggable once the tracing has stopped /
-        // the debugger agent has detached..
+        // the debugger agent has detached.
         kJavaDebuggable,
         // The runtime was started as a debuggable runtime. This allows us to support the extended set
         // of debug features (for ex: redefinition). We never transition out of this state.
