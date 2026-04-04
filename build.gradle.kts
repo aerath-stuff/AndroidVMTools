@@ -1,4 +1,4 @@
-import com.vanniktech.maven.publish.AndroidMultiVariantLibrary
+import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.SourcesJar
 
@@ -36,14 +36,14 @@ dependencies {
 mavenPublishing {
     publishToMavenCentral(automaticRelease = false)
     configure(
-        AndroidMultiVariantLibrary(
+        AndroidSingleVariantLibrary(
             javadocJar = JavadocJar.Empty(),
             sourcesJar = SourcesJar.Sources()
         )
     )
 
     coordinates(
-        groupId = "io.github.vova7878",
+        groupId = project.group?.toString() ?: "io.github.vova7878",
         artifactId = "AndroidVMTools",
         version = project.version.toString()
     )
