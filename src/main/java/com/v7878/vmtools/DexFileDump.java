@@ -268,12 +268,12 @@ public final class DexFileDump {
                 if (!entry.perms().contains("r")) {
                     return;
                 }
-                if (entry.end() <= address || entry.start() >= end) {
+                if (entry.getEnd() <= address || entry.getStart() >= end) {
                     return;
                 }
 
-                long copy_begin = Math.max(address, entry.start());
-                long copy_end = Math.min(entry.end(), end);
+                long copy_begin = Math.max(address, entry.getStart());
+                long copy_end = Math.min(entry.getEnd(), end);
 
                 long copy_offset = copy_begin - address;
                 long copy_size = copy_end - copy_begin;
