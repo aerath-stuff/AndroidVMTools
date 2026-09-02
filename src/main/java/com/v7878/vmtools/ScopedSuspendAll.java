@@ -38,11 +38,11 @@ public class ScopedSuspendAll implements FineClosable {
     }
 
     public ScopedSuspendAll(boolean long_suspend) {
-        Native.INSTANCE.SuspendAll(0, Native.CAUSE.nativeAddress(), long_suspend);
+        // Native.INSTANCE.SuspendAll(0, Native.CAUSE.nativeAddress(), long_suspend);
     }
 
     @Override
     public void close() {
-        Native.INSTANCE.ResumeAll(0);
+        // Native.INSTANCE.ResumeAll(0);
     }
 }
