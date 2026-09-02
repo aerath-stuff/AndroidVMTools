@@ -16,7 +16,7 @@ android {
 
     namespace = "com.v7878.vmtools"
     compileSdk {
-        version = release(36)
+        version = release(37)
     }
 
     defaultConfig {
