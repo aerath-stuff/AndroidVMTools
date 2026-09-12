@@ -68,13 +68,11 @@ public class Hooks {
 
     public static void deoptimize(Executable ex) {
         ensureDeclaringClassInitialized(ex);
-        try (var ignored = new ScopedSuspendAll(false)) {
-            ArtMethodUtils.makeExecutableNonCompilable(ex);
-            long entry_point = Modifier.isNative(ex.getModifiers()) ?
-                    EntryPoints.getGenericJniTrampoline() :
-                    EntryPoints.getToInterpreterBridge();
-            ArtMethodUtils.setExecutableEntryPoint(ex, entry_point);
-        }
+        ArtMethodUtils.makeExecutableNonCompilable(ex);
+        long entry_point = Modifier.isNative(ex.getModifiers()) ?
+                EntryPoints.getGenericJniTrampoline() :
+                EntryPoints.getToInterpreterBridge();
+        ArtMethodUtils.setExecutableEntryPoint(ex, entry_point);
     }
 
     private static byte[] toArray(long value) {
@@ -157,19 +155,17 @@ public class Hooks {
         SunCleaner.systemCleaner().register(target.getDeclaringClass(), scope::close);
         MemorySegment new_entry_point = NativeCodeBlob.makeCodeBlob(scope,
                 getTrampolineArray(getArtMethod(hooker), hooker_entry_point))[0];
-        try (var ignored = new ScopedSuspendAll(false)) {
-            ArtMethodUtils.makeExecutableNonCompilable(target);
-            ArtMethodUtils.changeExecutableFlags(target, kAccFastInterpreterToInterpreterInvoke, 0);
-            var hooker_address = new_entry_point.nativeAddress();
+        ArtMethodUtils.makeExecutableNonCompilable(target);
+        ArtMethodUtils.changeExecutableFlags(target, kAccFastInterpreterToInterpreterInvoke, 0);
+        var hooker_address = new_entry_point.nativeAddress();
 
-            if (return_after) {
-                hookerNativeAddress = hooker_address;
-            } else {
-                hookerNativeAddress = ArtMethodUtils.getExecutableEntryPoint(target);
-            }
-
-            ArtMethodUtils.setExecutableEntryPoint(target, hooker_address);
+        if (return_after) {
+            hookerNativeAddress = hooker_address;
+        } else {
+            hookerNativeAddress = ArtMethodUtils.getExecutableEntryPoint(target);
         }
+
+        ArtMethodUtils.setExecutableEntryPoint(target, hooker_address);
 
         return hookerNativeAddress;
     }
